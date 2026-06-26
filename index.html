@@ -3,548 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YOUR_NAME // TERMINAL v2.0</title>
+  <title>EUPHORUS1 // TERMINAL v2.0</title>
   <meta name="description" content="Game developer, artist, and creator. Portfolio terminal." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet" />
- 
-  <style>
-    /* ─── RESET & BASE ─────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
- 
-    :root {
-      --green:      #00FF41;
-      --green-dim:  #00C032;
-      --green-dark: #004F14;
-      --amber:      #FFB000;
-      --red:        #FF4444;
-      --bg:         #080808;
-      --bg2:        #0E0E0E;
-      --scanline:   rgba(0, 255, 65, 0.03);
-      --font-mono:  'Share Tech Mono', 'Courier New', monospace;
-      --font-display: 'VT323', monospace;
-    }
- 
-    html { scroll-behavior: smooth; }
- 
-    body {
-      background: var(--bg);
-      color: var(--green);
-      font-family: var(--font-mono);
-      font-size: clamp(13px, 2.2vw, 16px);
-      line-height: 1.7;
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-    }
- 
-    /* ─── CRT EFFECTS ───────────────────────────────────────── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        var(--scanline) 2px,
-        var(--scanline) 4px
-      );
-      pointer-events: none;
-      z-index: 9999;
-    }
- 
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
-      pointer-events: none;
-      z-index: 9998;
-    }
- 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-      body::before { display: none; }
-    }
- 
-    /* ─── FLICKER ANIMATION ─────────────────────────────────── */
-    @keyframes flicker {
-      0%, 97%, 100% { opacity: 1; }
-      98% { opacity: 0.92; }
-      99% { opacity: 0.97; }
-    }
-    body { animation: flicker 8s infinite; }
- 
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-    @keyframes scanDown {
-      from { transform: translateY(-100%); }
-      to { transform: translateY(100vh); }
-    }
- 
-    /* ─── BOOT SCREEN ───────────────────────────────────────── */
-    #boot-screen {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 9000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      padding: clamp(1.5rem, 5vw, 4rem);
-      transition: opacity 0.6s ease;
-    }
-    #boot-screen.hide { opacity: 0; pointer-events: none; }
- 
-    .boot-line {
-      font-family: var(--font-mono);
-      color: var(--green);
-      font-size: clamp(13px, 2vw, 15px);
-      margin-bottom: 0.3em;
-      opacity: 0;
-    }
-    .boot-line.show { opacity: 1; animation: fadeIn 0.2s ease forwards; }
-    .boot-line.amber { color: var(--amber); }
-    .boot-line.red   { color: var(--red); }
- 
-    #boot-logo {
-      font-family: var(--font-display);
-      font-size: clamp(2.5rem, 8vw, 5rem);
-      color: var(--green);
-      line-height: 1;
-      margin-bottom: 1.5rem;
-      text-shadow: 0 0 20px var(--green-dim);
-      letter-spacing: 0.05em;
-    }
- 
-    /* ─── SKIP BUTTON ───────────────────────────────────────── */
-    #skip-btn {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      z-index: 9100;
-      background: transparent;
-      border: 1px solid var(--green-dim);
-      color: var(--green-dim);
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: 0.4em 0.9em;
-      cursor: pointer;
-      letter-spacing: 0.1em;
-      transition: color 0.2s, border-color 0.2s;
-    }
-    #skip-btn:hover, #skip-btn:focus {
-      color: var(--green);
-      border-color: var(--green);
-      outline: 2px solid var(--green);
-      outline-offset: 2px;
-    }
- 
-    /* ─── LAYOUT ────────────────────────────────────────────── */
-    #main {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem);
-      opacity: 0;
-      transition: opacity 0.6s ease 0.2s;
-    }
-    #main.show { opacity: 1; }
- 
-    /* ─── HEADER ────────────────────────────────────────────── */
-    .site-header {
-      border-bottom: 1px solid var(--green-dark);
-      padding-bottom: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
- 
-    .ascii-name {
-      font-family: var(--font-display);
-      font-size: clamp(2.8rem, 10vw, 6rem);
-      color: var(--green);
-      text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
-      line-height: 1;
-      letter-spacing: 0.04em;
-    }
- 
-    .tagline {
-      color: var(--green-dim);
-      font-size: clamp(0.75rem, 1.8vw, 0.875rem);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-top: 0.5rem;
-    }
- 
-    .cursor {
-      display: inline-block;
-      width: 0.6em;
-      height: 1em;
-      background: var(--green);
-      vertical-align: text-bottom;
-      animation: blink 1s step-end infinite;
-    }
- 
-    /* ─── NAV ───────────────────────────────────────────────── */
-    nav {
-      margin-top: 1.2rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem 1.2rem;
-    }
-    nav a {
-      color: var(--amber);
-      text-decoration: none;
-      font-size: clamp(0.75rem, 1.8vw, 0.85rem);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      transition: color 0.15s, text-shadow 0.15s;
-      padding: 0.2em 0;
-    }
-    nav a::before { content: '> '; color: var(--green-dim); }
-    nav a:hover, nav a:focus {
-      color: var(--green);
-      text-shadow: 0 0 8px var(--green);
-      outline: none;
-    }
-    nav a:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
- 
-    /* ─── SECTION SHELL ─────────────────────────────────────── */
-    .section {
-      margin-bottom: 3.5rem;
-      animation: fadeIn 0.4s ease both;
-    }
- 
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      margin-bottom: 1.4rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--green-dark);
-    }
-    .section-header h2 {
-      font-family: var(--font-display);
-      font-size: clamp(1.4rem, 4vw, 2rem);
-      color: var(--green);
-      letter-spacing: 0.06em;
-      font-weight: normal;
-    }
-    .section-header .prompt {
-      color: var(--green-dim);
-      font-size: 0.85em;
-      white-space: nowrap;
-    }
- 
-    /* ─── ABOUT ─────────────────────────────────────────────── */
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-    @media (min-width: 580px) {
-      .about-grid { grid-template-columns: 1fr 1fr; }
-    }
- 
-    .stat-block {
-      background: var(--bg2);
-      border: 1px solid var(--green-dark);
-      padding: 1rem 1.2rem;
-    }
-    .stat-block .label {
-      color: var(--amber);
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-bottom: 0.3rem;
-    }
-    .stat-block .value {
-      color: var(--green);
-      font-size: clamp(0.85rem, 2vw, 0.95rem);
-      line-height: 1.6;
-    }
- 
-    .about-text {
-      background: var(--bg2);
-      border: 1px solid var(--green-dark);
-      border-left: 3px solid var(--green);
-      padding: 1.2rem 1.4rem;
-      margin-bottom: 1.2rem;
-      font-size: clamp(0.85rem, 2vw, 0.95rem);
-      color: var(--green-dim);
-    }
-    .about-text p + p { margin-top: 0.8em; }
- 
-    /* ─── LINKS / SOCIALS ───────────────────────────────────── */
-    .links-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 0.7rem;
-    }
- 
-    .link-card {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      background: var(--bg2);
-      border: 1px solid var(--green-dark);
-      padding: 0.85rem 1rem;
-      text-decoration: none;
-      color: var(--green);
-      font-size: clamp(0.8rem, 2vw, 0.9rem);
-      letter-spacing: 0.05em;
-      transition: border-color 0.2s, background 0.2s, color 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    .link-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--green);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.2s ease;
-      opacity: 0.07;
-    }
-    .link-card:hover::before, .link-card:focus::before { transform: scaleX(1); }
-    .link-card:hover, .link-card:focus {
-      border-color: var(--green);
-      color: var(--green);
-      outline: none;
-    }
-    .link-card:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-    .link-card .icon { font-size: 1.2em; flex-shrink: 0; }
-    .link-card .link-label { line-height: 1.2; }
-    .link-card .link-sub {
-      display: block;
-      font-size: 0.7em;
-      color: var(--green-dim);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .link-card.amber-card { border-color: rgba(255,176,0,0.3); color: var(--amber); }
-    .link-card.amber-card:hover, .link-card.amber-card:focus { border-color: var(--amber); }
- 
-    /* ─── GAMES ─────────────────────────────────────────────── */
-    .games-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-    @media (min-width: 620px) {
-      .games-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-    }
- 
-    .game-card {
-      background: var(--bg2);
-      border: 1px solid var(--green-dark);
-      overflow: hidden;
-      transition: border-color 0.2s;
-    }
-    .game-card:hover, .game-card:focus-within { border-color: var(--green); }
- 
-    .game-gif-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: #000;
-      overflow: hidden;
-    }
-    .game-gif-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      filter: sepia(0.15) hue-rotate(80deg) saturate(1.2);
-      transition: filter 0.3s;
-    }
-    .game-card:hover .game-gif-wrap img,
-    .game-card:focus-within .game-gif-wrap img {
-      filter: none;
-    }
-    .game-gif-wrap .gif-label {
-      position: absolute;
-      top: 0.5rem;
-      left: 0.5rem;
-      background: rgba(0,0,0,0.8);
-      color: var(--amber);
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      padding: 0.15em 0.5em;
-      text-transform: uppercase;
-    }
- 
-    /* Placeholder for missing GIFs */
-    .gif-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--green-dark);
-      color: var(--green);
-      font-family: var(--font-display);
-      font-size: 2rem;
-      letter-spacing: 0.1em;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .gif-placeholder .ph-sub {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--green-dim);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
- 
-    .game-info { padding: 1rem 1.1rem; }
-    .game-title {
-      font-family: var(--font-display);
-      font-size: clamp(1.2rem, 3.5vw, 1.5rem);
-      color: var(--green);
-      letter-spacing: 0.05em;
-      margin-bottom: 0.3rem;
-    }
-    .game-desc {
-      font-size: clamp(0.75rem, 1.8vw, 0.85rem);
-      color: var(--green-dim);
-      line-height: 1.6;
-    }
-    .game-tags {
-      margin-top: 0.7rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.3rem;
-    }
-    .tag {
-      background: transparent;
-      border: 1px solid var(--green-dark);
-      color: var(--green-dim);
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.15em 0.5em;
-    }
-    .game-card a.play-link {
-      display: inline-block;
-      margin-top: 0.8rem;
-      color: var(--amber);
-      font-size: 0.78rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      text-decoration: none;
-    }
-    .game-card a.play-link::before { content: '> '; }
-    .game-card a.play-link:hover, .game-card a.play-link:focus {
-      color: var(--green);
-      outline: 2px solid var(--green);
-      outline-offset: 2px;
-    }
- 
-    /* ─── ART / MANGA ───────────────────────────────────────── */
-    .art-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1.2rem;
-    }
- 
-    .art-card {
-      background: var(--bg2);
-      border: 1px solid var(--green-dark);
-      overflow: hidden;
-      transition: border-color 0.2s;
-    }
-    .art-card:hover, .art-card:focus-within { border-color: var(--amber); }
- 
-    .art-img-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 3/4;
-      background: #000;
-      overflow: hidden;
-    }
-    .art-img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      filter: grayscale(0.2) contrast(1.05);
-      transition: filter 0.3s, transform 0.4s;
-    }
-    .art-card:hover .art-img-wrap img,
-    .art-card:focus-within .art-img-wrap img {
-      filter: none;
-      transform: scale(1.03);
-    }
-    .art-img-wrap .corner-tag {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      background: rgba(0,0,0,0.85);
-      color: var(--amber);
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      padding: 0.2em 0.6em;
-      text-transform: uppercase;
-    }
- 
-    /* Art placeholder */
-    .art-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0d0d0d;
-      border: 1px dashed var(--green-dark);
-      color: var(--green-dim);
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      text-align: center;
-      padding: 1rem;
-    }
- 
-    .art-info { padding: 0.8rem 1rem; }
-    .art-title {
-      font-family: var(--font-display);
-      font-size: clamp(1.1rem, 3vw, 1.35rem);
-      color: var(--amber);
-      letter-spacing: 0.04em;
-    }
-    .art-meta {
-      font-size: 0.72rem;
-      color: var(--green-dim);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-top: 0.2rem;
-    }
- 
-    /* ─── FOOTER ────────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--green-dark);
-      padding: 1.5rem 0;
-      font-size: clamp(0.7rem, 1.5vw, 0.78rem);
-      color: var(--green-dim);
-      letter-spacing: 0.08em;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-    footer span { opacity: 0.6; }
- 
-    /* ─── SCROLLBAR ─────────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 0; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
- 
-    /* ─── FOCUS VISIBLE GLOBAL ──────────────────────────────── */
-    :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
-    a:focus:not(:focus-visible) { outline: none; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet" /> 
+  <link rel="stylesheet" href="style.css" />
 </head>
  
 <body>
@@ -561,8 +24,8 @@
  
     <!-- HEADER -->
     <header class="site-header">
-      <h1 class="ascii-name">YOUR_NAME<span class="cursor" aria-hidden="true"></span></h1>
-      <p class="tagline">// Game Developer &amp; Artist — System Online</p>
+      <h1 class="ascii-name">YUVRAJ_KUMPAVAT<span class="cursor" aria-hidden="true"></span></h1>
+      <p class="tagline">// Gameplay Programmer &amp; Mangaka — System Online</p>
       <nav aria-label="Quick links">
         <a href="#about">ABOUT</a>
         <a href="#games">GAMES</a>
@@ -581,12 +44,12 @@
       <div class="about-text">
         <p>
           <!-- ✏️  Replace this with your actual bio -->
-          Hi! I'm a game developer and artist who loves crafting weird, handcrafted experiences.
-          I build games that feel alive, draw manga in my spare time, and occasionally break
-          physics engines on purpose.
+          Hi! I'm a gameplay programmer and mangaka who loves crafting weird, handcrafted experiences.
+          I build games that feel alive, draw manga in my spare time, and sometimes tune cars in 
+          racing games.
         </p>
         <p>
-          Currently studying / working at <strong>[YOUR UNIVERSITY / COMPANY]</strong>.
+          Currently working at <strong>PRISMATIC INTERACTIVE</strong> writing shaders or working with in-game lighting.
           Always looking for collaborators, feedback, and interesting conversations.
         </p>
       </div>
@@ -594,11 +57,11 @@
       <div class="about-grid">
         <div class="stat-block">
           <div class="label">Specialisation</div>
-          <div class="value">Game Dev / 2D Art / Narrative Design</div>
+          <div class="value">Game Dev / 2D Art / Vehicle Handling Design</div>
         </div>
         <div class="stat-block">
           <div class="label">Tools</div>
-          <div class="value">Unity · Godot · Aseprite · Procreate</div>
+          <div class="value">Unreal · Unity · Clip Studio Paint · Git/Github</div>
         </div>
         <div class="stat-block">
           <div class="label">Status</div>
@@ -606,7 +69,7 @@
         </div>
         <div class="stat-block">
           <div class="label">Location</div>
-          <div class="value">Your City, Country</div>
+          <div class="value">India</div>
         </div>
       </div>
     </section>
@@ -622,69 +85,52 @@
  
         <!-- GAME 1 — Replace src with your GIF path, e.g. "assets/game1.gif" -->
         <article class="game-card">
-          <div class="game-gif-wrap">
-            <div class="gif-placeholder" aria-label="Game 1 preview GIF — replace src below">
-              <span>GAME 01</span>
-              <span class="ph-sub">Replace with your .gif</span>
-            </div>
-            <!-- Uncomment and update once you have your GIF:
-            <img src="assets/game1.gif" alt="Gameplay preview of Game Title 1" loading="lazy" />
-            -->
-            <span class="gif-label" aria-hidden="true">PREVIEW</span>
-          </div>
+          <video autoplay loop muted playsinline aria-label="Gameplay preview of Bubba Gramp">
+            <source src="assets/gifs/bubba.mp4" type="video/mp4" />
+          </video>
           <div class="game-info">
-            <h3 class="game-title">GAME TITLE ONE</h3>
-            <p class="game-desc">A short description of what makes this game interesting. Mention genre, mood, or mechanic.</p>
+            <h3 class="game-title">BUBBA GRAMP</h3>
+            <p class="game-desc">A calm puzzle platformer with a charming environment and level design.</p>
             <div class="game-tags" aria-label="Tags">
-              <span class="tag">2D</span>
+              <span class="tag">3D</span>
               <span class="tag">Platformer</span>
-              <span class="tag">Godot</span>
+              <span class="tag">Unreal</span>
             </div>
-            <a class="play-link" href="#" target="_blank" rel="noopener">Play on itch.io</a>
+            <a class="play-link" href="https://rajatprabhudev.itch.io/bubba-gramp" target="_blank" rel="noopener">Play on itch.io</a>
           </div>
         </article>
  
         <!-- GAME 2 -->
         <article class="game-card">
-          <div class="game-gif-wrap">
-            <div class="gif-placeholder" aria-label="Game 2 preview GIF — replace src below">
-              <span>GAME 02</span>
-              <span class="ph-sub">Replace with your .gif</span>
-            </div>
-            <!-- <img src="assets/game2.gif" alt="Gameplay preview of Game Title 2" loading="lazy" /> -->
-            <span class="gif-label" aria-hidden="true">PREVIEW</span>
-          </div>
+          <video autoplay loop muted playsinline aria-label="Gameplay preview of Twin Flames">
+            <source src="assets/gifs/flames.mp4" type="video/mp4" />
+          </video>
           <div class="game-info">
-            <h3 class="game-title">GAME TITLE TWO</h3>
-            <p class="game-desc">Another short, punchy description. What vibe does it give? What's the hook?</p>
+            <h3 class="game-title">TWIN FLAMES</h3>
+            <p class="game-desc">Two candles traversing through their master's castle. Will they get help?</p>
             <div class="game-tags" aria-label="Tags">
               <span class="tag">Puzzle</span>
-              <span class="tag">Unity</span>
-              <span class="tag">Jam Game</span>
+              <span class="tag">Unreal</span>
+              <span class="tag">CGD 2025</span>
             </div>
-            <a class="play-link" href="#" target="_blank" rel="noopener">Play on itch.io</a>
+            <a class="play-link" href="https://asgs.itch.io/twin-flames" target="_blank" rel="noopener">Play on itch.io</a>
           </div>
         </article>
  
         <!-- GAME 3 -->
         <article class="game-card">
-          <div class="game-gif-wrap">
-            <div class="gif-placeholder" aria-label="Game 3 preview GIF — replace src below">
-              <span>GAME 03</span>
-              <span class="ph-sub">Replace with your .gif</span>
-            </div>
-            <!-- <img src="assets/game3.gif" alt="Gameplay preview of Game Title 3" loading="lazy" /> -->
-            <span class="gif-label" aria-hidden="true">PREVIEW</span>
-          </div>
+          <video autoplay loop muted playsinline aria-label="Gameplay preview of Unreal Racing">
+            <source src="assets/gifs/vehicle.mp4" type="video/mp4" />
+          </video>
           <div class="game-info">
-            <h3 class="game-title">GAME TITLE THREE</h3>
-            <p class="game-desc">Keep it specific. One strong sentence beats three vague ones.</p>
+            <h3 class="game-title">Unreal Vehicle Handling</h3>
+            <p class="game-desc">Built a vehicle handling design from scratch in Unreal Engine 5.3.</p>
             <div class="game-tags" aria-label="Tags">
-              <span class="tag">Horror</span>
-              <span class="tag">Pixel Art</span>
+              <span class="tag">Blueprints</span>
+              <span class="tag">Physics</span>
               <span class="tag">Solo Dev</span>
             </div>
-            <a class="play-link" href="#" target="_blank" rel="noopener">Play on itch.io</a>
+            <a class="play-link" href="https://www.youtube.com/watch?v=_QO-it6wOjI" target="_blank" rel="noopener">Full Breakdown on Youtube</a>
           </div>
         </article>
  
@@ -703,30 +149,24 @@
         <!-- ART 1 — Replace src with your image path, e.g. "assets/manga1.jpg" -->
         <article class="art-card">
           <div class="art-img-wrap">
-            <div class="art-placeholder" aria-label="Manga drawing 1 — add your image">
-              [ place manga01.jpg here ]
-            </div>
-            <!-- <img src="assets/manga1.jpg" alt="Manga drawing: describe what's in it" loading="lazy" /> -->
+            <img src="assets/art/jolyne.png" alt="Manga drawing: describe what's in it" loading="lazy" />
             <span class="corner-tag" aria-hidden="true">ORIGINAL</span>
           </div>
           <div class="art-info">
-            <h3 class="art-title">Drawing Title</h3>
-            <p class="art-meta">Medium · Year</p>
+            <h3 class="art-title">Jolyne Figure Drawing</h3>
+            <p class="art-meta">Clip Studio Paint</p>
           </div>
         </article>
  
         <!-- ART 2 -->
         <article class="art-card">
           <div class="art-img-wrap">
-            <div class="art-placeholder" aria-label="Manga drawing 2 — add your image">
-              [ place manga02.jpg here ]
-            </div>
-            <!-- <img src="assets/manga2.jpg" alt="Manga drawing: describe what's in it" loading="lazy" /> -->
+            <img src="assets/art/michonne.png" alt="Manga drawing: describe what's in it" loading="lazy" />
             <span class="corner-tag" aria-hidden="true">ORIGINAL</span>
           </div>
           <div class="art-info">
-            <h3 class="art-title">Drawing Title</h3>
-            <p class="art-meta">Medium · Year</p>
+            <h3 class="art-title">Michonne Figure Drawing</h3>
+            <p class="art-meta">Clip Studio Paint</p>
           </div>
         </article>
  
@@ -743,7 +183,7 @@
       <div class="links-grid">
  
         <a class="link-card amber-card"
-           href="https://github.com/YOUR_USERNAME"
+           href="https://github.com/Euphorus"
            target="_blank" rel="noopener"
            aria-label="GitHub profile (opens in new tab)">
           <span class="icon" aria-hidden="true">⬡</span>
@@ -754,7 +194,7 @@
         </a>
  
         <a class="link-card amber-card"
-           href="https://linkedin.com/in/YOUR_USERNAME"
+           href="https://www.linkedin.com/in/yuvraj-kumpavat/"
            target="_blank" rel="noopener"
            aria-label="LinkedIn profile (opens in new tab)">
           <span class="icon" aria-hidden="true">◈</span>
@@ -765,7 +205,7 @@
         </a>
  
         <a class="link-card"
-           href="https://instagram.com/YOUR_USERNAME"
+           href="https://www.instagram.com/yusuke_inari/"
            target="_blank" rel="noopener"
            aria-label="Instagram profile (opens in new tab)">
           <span class="icon" aria-hidden="true">◉</span>
@@ -776,7 +216,7 @@
         </a>
  
         <a class="link-card"
-           href="assets/cv.pdf"
+           href="assets/cv/CV_YuvrajKumpavat.pdf"
            target="_blank" rel="noopener"
            aria-label="Download CV as PDF (opens in new tab)">
           <span class="icon" aria-hidden="true">▣</span>
@@ -788,7 +228,7 @@
  
         <!-- Optional: itch.io, Twitter/X, email, etc. -->
         <a class="link-card"
-           href="https://itch.io/YOUR_USERNAME"
+           href="https://yuvraj24.itch.io/"
            target="_blank" rel="noopener"
            aria-label="itch.io game page (opens in new tab)">
           <span class="icon" aria-hidden="true">▲</span>
@@ -803,7 +243,7 @@
  
     <!-- FOOTER -->
     <footer>
-      <span>© 2025 YOUR_NAME</span>
+      <span>© 2025 YUVRAJ_KUMPAVAT</span>
       <span>// SYSTEM NOMINAL — ALL MODULES LOADED</span>
     </footer>
  
